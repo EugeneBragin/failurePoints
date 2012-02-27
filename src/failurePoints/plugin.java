@@ -20,15 +20,15 @@ import cytoscape.util.CytoscapeAction;
 public class plugin extends CytoscapePlugin {
 
   public plugin() {
-    selectFailurePointsAction selectAction = new selectFailurePointsAction(this);
-    Cytoscape.getDesktop().getCyMenus().addCytoscapeAction((CytoscapeAction)selectAction);
+    highlightFailurePointsAction highlightAction = new highlightFailurePointsAction(this);
+    Cytoscape.getDesktop().getCyMenus().addCytoscapeAction((CytoscapeAction)highlightAction);
   }
   
 
-  public class selectFailurePointsAction extends CytoscapeAction {
+  public class highlightFailurePointsAction extends CytoscapeAction {
 
-    public selectFailurePointsAction(plugin myPlugin) {
-      super("Select Failure Points");
+    public highlightFailurePointsAction(plugin myPlugin) {
+      super("Highlight Failure Points");
       setPreferredMenu("Plugins.Failure Points");
     }
 
