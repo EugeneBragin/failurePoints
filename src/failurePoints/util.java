@@ -5,8 +5,10 @@
 package failurePoints;
 
 import cytoscape.CyNetwork;
+import cytoscape.Cytoscape;
 import java.util.HashMap;
 import java.util.Vector;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -14,6 +16,34 @@ import java.util.Vector;
  */
 public class util {
 
+  public static boolean isFailurePoint(int nodeId, CyNetwork net) {
+    boolean failure = false;
+          
+    int kids[] = net.getAdjacentEdgeIndicesArray(nodeId, false, true, true);
+    if (kids.length >= 2) {
+      int firstKidID = net.getEdgeTargetIndex(kids[0]);
+      if (firstKidID == nodeId) {
+        firstKidID = net.getEdgeSourceIndex(kids[0]);
+      }
+
+      for (int i = 1; i < kids.length; i++) {
+        int xKidId = net.getEdgeTargetIndex(kids[i]);
+        if (xKidId == nodeId) {
+          xKidId = net.getEdgeSourceIndex(kids[i]);
+        }
+
+        if (!util.hasPathAvoiding(firstKidID, xKidId, nodeId, net)) {
+          failure = true;
+          break;
+        }
+
+      }
+    }
+    
+    return failure;
+  }
+        
+  
   public static boolean hasPathAvoiding(int source, int target, int avoid, CyNetwork net) {
 
     //the hasPath boolean is created with inital value false

@@ -32,12 +32,26 @@ public class plugin extends CytoscapePlugin {
 
   public class highlightFailurePointsAction extends CytoscapeAction {
 
+    CyNetwork network;
+    CyNetworkView view;
+    
     public highlightFailurePointsAction(plugin myPlugin) {
       super("Highlight Failure Points");
       setPreferredMenu("Plugins.Failure Points");
     }
 
     public void actionPerformed(ActionEvent e) {
+      view = Cytoscape.getCurrentNetworkView();
+      network = Cytoscape.getCurrentNetwork();
+      
+      // Loop through all nodes
+      int allNodes[] = network.getNodeIndicesArray();
+      for (int i = 0; i < allNodes.length; i++) {
+        if (util.isFailurePoint(allNodes[i], network)) {
+          System.out.println(allNodes[i] + "is a failure point");
+        }
+      }
+      
     }
   }  
   
