@@ -26,6 +26,7 @@ public class plugin extends CytoscapePlugin {
     Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new highlightFailurePointsAction(this));
     Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new hasPathAction(this));
     Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new hasPathAvoidingAction(this));
+    Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new isFailureNodeAction(this));
   }
   
 
@@ -93,6 +94,52 @@ public class plugin extends CytoscapePlugin {
       }
     }
   }  
+
+  public class isFailureNodeAction extends CytoscapeAction {
+
+    CyNetwork network;
+    CyNetworkView view;    
+
+    public isFailureNodeAction(plugin myPlugin) {
+      super("Is Failure Node");
+      setPreferredMenu("Plugins.Failure Points");
+    }
+
+    public void actionPerformed(ActionEvent e) {
+      view = Cytoscape.getCurrentNetworkView();
+      network = Cytoscape.getCurrentNetwork();
+      boolean failure = false;
+      
+      if (view.getSelectedNodeIndices().length != 1) {
+          JOptionPane.showMessageDialog(view.getComponent(), "Please select 1 node");
+      } else {
+        int selectedNodes[] = view.getSelectedNodeIndices();
+        int nodeId = selectedNodes[0];
+          
+        int kids[] = network.getAdjacentEdgeIndicesArray(nodeId, false, true, true);
+        if (kids.length > 2) {
+          int firstKidID = network.getEdgeTargetIndex(kids[0]);
+          if (firstKidID == nodeId) {
+            firstKidID = network.getEdgeSourceIndex(kids[0]);
+          }            
+            
+          for (int i = 1; i < kids.length; i++) {
+            int xKidId = network.getEdgeTargetIndex(kids[i]);
+            if (xKidId == nodeId) {
+              xKidId = network.getEdgeSourceIndex(kids[i]);
+            }
+            
+            if (!util.hasPathAvoiding(firstKidID, xKidId, nodeId, network)) {
+              failure = true;
+              break;
+            }
+            
+          }
+        }
+      }
+      System.out.println("It " + (failure ? "is" : "isn't") + " failure node");
+    }
+  }    
   
 
 }
