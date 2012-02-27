@@ -13,6 +13,7 @@ import cytoscape.view.CyMenus;
 import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.util.CytoscapeAction;
 import cytoscape.view.CyNetworkView;
+import giny.view.NodeView;
 import javax.swing.JOptionPane;
 
 
@@ -47,11 +48,10 @@ public class plugin extends CytoscapePlugin {
       // Loop through all nodes
       int allNodes[] = network.getNodeIndicesArray();
       for (int i = 0; i < allNodes.length; i++) {
-        if (util.isFailurePoint(allNodes[i], network)) {
-          System.out.println(allNodes[i] + "is a failure point");
-        }
+        NodeView nView = view.getNodeView(allNodes[i]);
+        nView.setSelected(util.isFailurePoint(allNodes[i], network));
       }
-      
+      view.redrawGraph(true, true);
     }
   }  
   
