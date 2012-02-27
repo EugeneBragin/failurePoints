@@ -117,7 +117,7 @@ public class plugin extends CytoscapePlugin {
         int nodeId = selectedNodes[0];
           
         int kids[] = network.getAdjacentEdgeIndicesArray(nodeId, false, true, true);
-        if (kids.length > 2) {
+        if (kids.length >= 2) {
           int firstKidID = network.getEdgeTargetIndex(kids[0]);
           if (firstKidID == nodeId) {
             firstKidID = network.getEdgeSourceIndex(kids[0]);
