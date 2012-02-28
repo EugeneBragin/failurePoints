@@ -4,18 +4,20 @@
  */
 package failurePoints;
 
-
 import cytoscape.CyNetwork;
 import java.awt.event.ActionEvent;
 
 import cytoscape.Cytoscape;
 import cytoscape.view.CyMenus;
 import cytoscape.plugin.CytoscapePlugin;
+import cytoscape.task.Task;
+import cytoscape.task.sample.SampleTask;
+import cytoscape.task.ui.JTaskConfig;
+import cytoscape.task.util.TaskManager;
 import cytoscape.util.CytoscapeAction;
 import cytoscape.view.CyNetworkView;
 import giny.view.NodeView;
 import javax.swing.JOptionPane;
-
 
 /**
  *
@@ -23,137 +25,101 @@ import javax.swing.JOptionPane;
  */
 public class plugin extends CytoscapePlugin {
 
-  public plugin() {
-    Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new highlightFailurePointsAction(this));
-    Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new hasPathAction(this));
-    Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new hasPathAvoidingAction(this));
-    Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new isFailureNodeAction(this));
-  }
-  
-
-  public class highlightFailurePointsAction extends CytoscapeAction {
-
-    CyNetwork network;
-    CyNetworkView view;
-    
-    public highlightFailurePointsAction(plugin myPlugin) {
-      super("Highlight Failure Points");
-      setPreferredMenu("Plugins.Failure Points");
+    public plugin() {
+        Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new sampleTaskAction(this));
+        Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new highlightFailurePointsAction(this));
+        Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new isFailureNodeAction(this));
     }
 
-    public void actionPerformed(ActionEvent e) {
-      view = Cytoscape.getCurrentNetworkView();
-      network = Cytoscape.getCurrentNetwork();
-      
-      // Loop through all nodes
-      int allNodes[] = network.getNodeIndicesArray();
-      for (int i = 0; i < allNodes.length; i++) {
-        NodeView nView = view.getNodeView(allNodes[i]);
-        nView.setSelected(util.isFailurePoint(allNodes[i], network));
-      }
-      view.redrawGraph(true, true);
-    }
-  }  
-  
-  public class hasPathAction extends CytoscapeAction {
+    public class sampleTaskAction extends CytoscapeAction {
 
-    CyNetwork network;
-    CyNetworkView view;    
-
-    public hasPathAction(plugin myPlugin) {
-      super("Has path");
-      setPreferredMenu("Plugins.Failure Points");
-    }
-
-    public void actionPerformed(ActionEvent e) {
-      view = Cytoscape.getCurrentNetworkView();
-      network = Cytoscape.getCurrentNetwork();
-      
-      if (view.getSelectedNodeIndices().length != 2) {
-          JOptionPane.showMessageDialog(view.getComponent(), "Please select 2 nodes");
-      } else {
-          int selectedNodes[] = view.getSelectedNodeIndices();
-          //calling the method hasPath (implemented below) to see if there is a path
-          //between selectedNode[0] and selectedNodes[1], then print the result to the
-          //command line
-          boolean isConnected = util.hasPath(selectedNodes[0], selectedNodes[1], network);
-          System.out.println(isConnected);
-      }
-    }
-  }  
-  
-  public class hasPathAvoidingAction extends CytoscapeAction {
-
-    CyNetwork network;
-    CyNetworkView view;    
-
-    public hasPathAvoidingAction(plugin myPlugin) {
-      super("Has path avoiding");
-      setPreferredMenu("Plugins.Failure Points");
-    }
-
-    public void actionPerformed(ActionEvent e) {
-      view = Cytoscape.getCurrentNetworkView();
-      network = Cytoscape.getCurrentNetwork();
-      
-      if (view.getSelectedNodeIndices().length != 2) {
-          JOptionPane.showMessageDialog(view.getComponent(), "Please select 2 nodes");
-      } else {
-          int selectedNodes[] = view.getSelectedNodeIndices();
-          //calling the method hasPath (implemented below) to see if there is a path
-          //between selectedNode[0] and selectedNodes[1], then print the result to the
-          //command line
-          boolean isConnected = util.hasPathAvoiding(selectedNodes[0], selectedNodes[1], -1, network);
-          System.out.println(isConnected);
-      }
-    }
-  }  
-
-  public class isFailureNodeAction extends CytoscapeAction {
-
-    CyNetwork network;
-    CyNetworkView view;    
-
-    public isFailureNodeAction(plugin myPlugin) {
-      super("Is Failure Node");
-      setPreferredMenu("Plugins.Failure Points");
-    }
-
-    public void actionPerformed(ActionEvent e) {
-      view = Cytoscape.getCurrentNetworkView();
-      network = Cytoscape.getCurrentNetwork();
-      boolean failure = false;
-      
-      if (view.getSelectedNodeIndices().length != 1) {
-          JOptionPane.showMessageDialog(view.getComponent(), "Please select 1 node");
-      } else {
-        int selectedNodes[] = view.getSelectedNodeIndices();
-        int nodeId = selectedNodes[0];
-          
-        int kids[] = network.getAdjacentEdgeIndicesArray(nodeId, false, true, true);
-        if (kids.length >= 2) {
-          int firstKidID = network.getEdgeTargetIndex(kids[0]);
-          if (firstKidID == nodeId) {
-            firstKidID = network.getEdgeSourceIndex(kids[0]);
-          }            
-            
-          for (int i = 1; i < kids.length; i++) {
-            int xKidId = network.getEdgeTargetIndex(kids[i]);
-            if (xKidId == nodeId) {
-              xKidId = network.getEdgeSourceIndex(kids[i]);
-            }
-            
-            if (!util.hasPathAvoiding(firstKidID, xKidId, nodeId, network)) {
-              failure = true;
-              break;
-            }
-            
-          }
+        public sampleTaskAction(plugin myPlugin) {
+            super("Sample Task");
+            setPreferredMenu("Plugins.Failure Points");
         }
-      }
-      System.out.println("It " + (failure ? "is" : "isn't") + " failure node");
-    }
-  }    
-  
 
+        public void actionPerformed(ActionEvent e) {
+            //  Create a Sample Task
+            Task task = new SampleTask(100, 100);
+
+            //  Configure JTask
+            JTaskConfig config = new JTaskConfig();
+
+            //  Show Cancel/Close Buttons
+            //config.displayUserButtons(true);
+
+            //  Execute Task via TaskManager
+            //  This automatically pops-open a JTask Dialog Box.
+            //  This method will block until the JTask Dialog Box is disposed.
+            boolean success = TaskManager.executeTask(task, config);
+        }
+    }
+
+    public class highlightFailurePointsAction extends CytoscapeAction {
+
+        CyNetwork network;
+        CyNetworkView view;
+
+        public highlightFailurePointsAction(plugin myPlugin) {
+            super("Highlight Failure Points");
+            setPreferredMenu("Plugins.Failure Points");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            //  Create a Task
+            Task task = new HighlightFailurePointsTask(Cytoscape.getCurrentNetwork(), Cytoscape.getCurrentNetworkView());
+
+            //  Configure JTask
+            JTaskConfig config = new JTaskConfig();
+            config.displayCancelButton(true);
+            config.displayStatus(true);
+            boolean success = TaskManager.executeTask(task, config);
+        }
+    }
+
+    public class isFailureNodeAction extends CytoscapeAction {
+
+        CyNetwork network;
+        CyNetworkView view;
+
+        public isFailureNodeAction(plugin myPlugin) {
+            super("Test Selected Node");
+            setPreferredMenu("Plugins.Failure Points");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            view = Cytoscape.getCurrentNetworkView();
+            network = Cytoscape.getCurrentNetwork();
+            boolean failure = false;
+
+            if (view.getSelectedNodeIndices().length != 1) {
+                JOptionPane.showMessageDialog(view.getComponent(), "Please select 1 node");
+            } else {
+                int selectedNodes[] = view.getSelectedNodeIndices();
+                int nodeId = selectedNodes[0];
+
+                int kids[] = network.getAdjacentEdgeIndicesArray(nodeId, false, true, true);
+                if (kids.length >= 2) {
+                    int firstKidID = network.getEdgeTargetIndex(kids[0]);
+                    if (firstKidID == nodeId) {
+                        firstKidID = network.getEdgeSourceIndex(kids[0]);
+                    }
+
+                    for (int i = 1; i < kids.length; i++) {
+                        int xKidId = network.getEdgeTargetIndex(kids[i]);
+                        if (xKidId == nodeId) {
+                            xKidId = network.getEdgeSourceIndex(kids[i]);
+                        }
+
+                        if (!core.hasPathAvoiding(firstKidID, xKidId, nodeId, network)) {
+                            failure = true;
+                            break;
+                        }
+
+                    }
+                }
+            }
+            System.out.println("It " + (failure ? "is" : "isn't") + " failure node");
+        }
+    }
 }
