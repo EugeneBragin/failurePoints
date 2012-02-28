@@ -10,8 +10,12 @@ import cytoscape.view.CyNetworkView;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 import giny.view.NodeView;
+import java.awt.Frame;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import java.io.IOException;
+import javax.swing.JPanel;
 
 
 public class HighlightFailurePointsTask implements Task {
@@ -40,13 +44,15 @@ public class HighlightFailurePointsTask implements Task {
      * Run the Task.
      */
     public void run() {
+        int count = 0;
+        double avgDegree = 0;
+        
         if (taskMonitor == null) {
             throw new IllegalStateException("Task Monitor is not set.");
         }
         try {
             int allNodes[] = this.network.getNodeIndicesArray();
             int i = 0;
-            int count = 0;
             taskMonitor.setStatus("Failure nodes found: ");
             
             for (i = 0; i < allNodes.length; i++) {
@@ -65,20 +71,38 @@ public class HighlightFailurePointsTask implements Task {
                 if (core.isFailurePoint(allNodes[i], this.network)) {
                     failure = true;
                     count++;
+                    avgDegree += this.network.getDegree(allNodes[i]);
                     taskMonitor.setStatus("Failure nodes found: " + count);
                 }
 
                 NodeView nView = this.view.getNodeView(allNodes[i]);
                 nView.setSelected(failure);
-                this.view.redrawGraph(true, true);          
-                
-                Thread.sleep(20);                
+                //this.view.redrawGraph(true, true);          
+                //Thread.sleep(5);                
                 i++;
             }
-
-            //this.view.redrawGraph(true, true);          
+            avgDegree = avgDegree/count;
+            
+            this.view.redrawGraph(true, true);          
         } catch (Exception e) {
             taskMonitor.setException(e, "Exception");
+        } finally {
+
+            Frame myFrame = new Frame();
+            myFrame.setTitle("Failure points statistics");
+            myFrame.setSize(350, 100);
+            JPanel failurePointsPanel = new FailurePointsPanel(Integer.toString(count), Double.toString(avgDegree));
+            
+            myFrame.add(failurePointsPanel);
+            myFrame.setAlwaysOnTop(true);
+            myFrame.setVisible(true);
+            
+            myFrame.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent we) {
+                    we.getWindow().dispose();
+                }
+            });            
+            
         }
     }
 
