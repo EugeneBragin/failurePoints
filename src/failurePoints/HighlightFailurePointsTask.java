@@ -15,15 +15,14 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import javax.swing.JPanel;
 
-
 public class HighlightFailurePointsTask implements Task {
+
     private CyNetwork network;
     private CyNetworkView view;
-    
     private TaskMonitor taskMonitor = null;
-    
     private static final int MIN_VALUE = 0;
     private int maxValue;
     private long countDelay;
@@ -46,7 +45,7 @@ public class HighlightFailurePointsTask implements Task {
     public void run() {
         int count = 0;
         double avgDegree = 0;
-        
+
         if (taskMonitor == null) {
             throw new IllegalStateException("Task Monitor is not set.");
         }
@@ -54,19 +53,19 @@ public class HighlightFailurePointsTask implements Task {
             int allNodes[] = this.network.getNodeIndicesArray();
             int i = 0;
             taskMonitor.setStatus("Failure nodes found: ");
-            
+
             for (i = 0; i < allNodes.length; i++) {
                 NodeView nView = this.view.getNodeView(allNodes[i]);
                 nView.setSelected(false);
             }
-            this.view.redrawGraph(true, true);          
-            
+            this.view.redrawGraph(true, true);
+
             i = 0;
             while (i < allNodes.length && !interrupted) {
                 boolean failure = false;
-                
+
                 // Calculate Percentage.  This must be a value between 0..100.
-                int percentComplete = (int) (((double) (i+1)/allNodes.length) * 100);
+                int percentComplete = (int) (((double) (i + 1) / allNodes.length) * 100);
                 taskMonitor.setPercentCompleted(percentComplete);
                 if (core.isFailurePoint(allNodes[i], this.network)) {
                     failure = true;
@@ -81,9 +80,9 @@ public class HighlightFailurePointsTask implements Task {
                 //Thread.sleep(5);                
                 i++;
             }
-            avgDegree = avgDegree/count;
-            
-            this.view.redrawGraph(true, true);          
+            avgDegree = avgDegree / count;
+
+            this.view.redrawGraph(true, true);
         } catch (Exception e) {
             taskMonitor.setException(e, "Exception");
         } finally {
@@ -91,18 +90,24 @@ public class HighlightFailurePointsTask implements Task {
             Frame myFrame = new Frame();
             myFrame.setTitle("Failure points statistics");
             myFrame.setSize(350, 100);
-            JPanel failurePointsPanel = new FailurePointsPanel(Integer.toString(count), Double.toString(avgDegree));
+            myFrame.setLocationRelativeTo(null);
+            
+            JPanel failurePointsPanel = new FailurePointsPanel(
+                    Integer.toString(count), 
+                    new DecimalFormat("#.##").format(avgDegree)
+            );
             
             myFrame.add(failurePointsPanel);
             myFrame.setAlwaysOnTop(true);
             myFrame.setVisible(true);
-            
+
             myFrame.addWindowListener(new WindowAdapter() {
+
                 public void windowClosing(WindowEvent we) {
                     we.getWindow().dispose();
                 }
-            });            
-            
+            });
+
         }
     }
 
