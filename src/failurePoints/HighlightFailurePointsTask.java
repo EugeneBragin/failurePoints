@@ -16,6 +16,7 @@ import java.awt.event.WindowEvent;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class HighlightFailurePointsTask implements Task {
@@ -28,15 +29,20 @@ public class HighlightFailurePointsTask implements Task {
     private long countDelay;
     private boolean interrupted = false;
     private int exceptionIndex = Integer.MAX_VALUE;
+    
+    private JLabel nOfFailureNodesLabel;
+    private JLabel averageConnDegreeLabel;
 
     /**
      * Constructor.
      *
      * @param network CyNetwork
      */
-    public HighlightFailurePointsTask(CyNetwork network, CyNetworkView view) {
+    public HighlightFailurePointsTask(CyNetwork network, CyNetworkView view, JLabel nOfFailureNodesLabel, JLabel averageConnDegreeLabel) {
         this.network = network;
         this.view = view;
+        this.nOfFailureNodesLabel = nOfFailureNodesLabel;
+        this.averageConnDegreeLabel = averageConnDegreeLabel;
     }
 
     /**
@@ -86,28 +92,8 @@ public class HighlightFailurePointsTask implements Task {
         } catch (Exception e) {
             taskMonitor.setException(e, "Exception");
         } finally {
-
-            Frame myFrame = new Frame();
-            myFrame.setTitle("Failure points statistics");
-            myFrame.setSize(350, 100);
-            myFrame.setLocationRelativeTo(null);
-            
-            JPanel failurePointsPanel = new FailurePointsPanel(
-                    Integer.toString(count), 
-                    new DecimalFormat("#.##").format(avgDegree)
-            );
-            
-            myFrame.add(failurePointsPanel);
-            myFrame.setAlwaysOnTop(true);
-            myFrame.setVisible(true);
-
-            myFrame.addWindowListener(new WindowAdapter() {
-
-                public void windowClosing(WindowEvent we) {
-                    we.getWindow().dispose();
-                }
-            });
-
+            nOfFailureNodesLabel.setText(Integer.toString(count));
+            averageConnDegreeLabel.setText(new DecimalFormat("#.##").format(avgDegree));
         }
     }
 

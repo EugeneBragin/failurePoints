@@ -16,8 +16,11 @@ import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
 import cytoscape.util.CytoscapeAction;
 import cytoscape.view.CyNetworkView;
+import cytoscape.view.cytopanels.CytoPanelImp;
 import giny.view.NodeView;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -25,11 +28,34 @@ import javax.swing.JOptionPane;
  */
 public class plugin extends CytoscapePlugin {
 
+    JPanel failurePointsPanel = new failurePointsControlPanel();
+    
+    
     public plugin() {
+        
+		// Three steps
+		
+		// Get the handler to cytoPanel west
+		CytoPanelImp ctrlPanel = (CytoPanelImp) Cytoscape.getDesktop().getCytoPanel(SwingConstants.WEST); 
+				
+		// Add the failurePointsPanel object to the cytoPanel west
+		ctrlPanel.add("Failure Points", failurePointsPanel);
+
+		// Select the panel after the plugin is initialized
+		int indexInCytoPanel = ctrlPanel.indexOfComponent("Failure Points");
+		ctrlPanel.setSelectedIndex(indexInCytoPanel);        
+        
         Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new sampleTaskAction(this));
         Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new highlightFailurePointsAction(this));
         Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new isFailureNodeAction(this));
     }
+    
+    
+	class MyPanel extends JPanel {
+		public MyPanel() {
+		}
+	}    
+    
 
     public class sampleTaskAction extends CytoscapeAction {
 
@@ -66,14 +92,7 @@ public class plugin extends CytoscapePlugin {
         }
 
         public void actionPerformed(ActionEvent e) {
-            //  Create a Task
-            Task task = new HighlightFailurePointsTask(Cytoscape.getCurrentNetwork(), Cytoscape.getCurrentNetworkView());
 
-            //  Configure JTask
-            JTaskConfig config = new JTaskConfig();
-            config.displayCancelButton(true);
-            config.displayStatus(true);
-            boolean success = TaskManager.executeTask(task, config);
         }
     }
 
