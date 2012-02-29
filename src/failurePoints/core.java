@@ -9,9 +9,11 @@ import cytoscape.Cytoscape;
 import cytoscape.view.CyNetworkView;
 import giny.view.NodeView;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
+import org.apache.commons.lang.ArrayUtils;
 
 /**
  *
@@ -19,32 +21,8 @@ import javax.swing.JProgressBar;
  */
 public class core {
 
-  public static void highlightFailurePoints(CyNetwork net, CyNetworkView view) {
-    // Loop through all nodes
-    int allNodes[] = net.getNodeIndicesArray();
-
-    ProgressFrame progressFrame = new ProgressFrame();
-    JProgressBar progressBar = progressFrame.getProgressBar();
-    progressBar.setMinimum(0);
-    progressBar.setMaximum(allNodes.length);
-    progressBar.setValue(0);
-    progressBar.setStringPainted(true);
-    progressFrame.setVisible(true);
+  public static Random generator = new Random();
     
-    int x=0;
-    for (int i = 0; i < allNodes.length; i++) {
-      NodeView nView = view.getNodeView(allNodes[i]);
-      nView.setSelected(core.isFailurePoint(allNodes[i], net));
-      progressBar.setValue(i);
-      for (int j = 0; j < 100000000; j++) {
-        x=x+j;
-      }
-    }
-    System.out.println(x);
-    view.redrawGraph(true, true);
-  }
-  
-  
   public static boolean isFailurePoint(int nodeId, CyNetwork net) {
     boolean failure = false;
           
@@ -72,6 +50,18 @@ public class core {
     return failure;
   }
         
+  public static int[] pickNRandomNodes(int N, CyNetwork net) {
+      int rndNodes[] = new int[N];
+      int allNodes[] = net.getNodeIndicesArray();
+      
+      for (int i = 1; i <= N; i++) {
+          int rnd = generator.nextInt(allNodes.length);
+          rndNodes[i-1] = allNodes[rnd];
+          allNodes = ArrayUtils.remove(allNodes, rnd);
+      }
+
+      return rndNodes;
+  }
   
   public static boolean hasPathAvoiding(int source, int target, int avoid, CyNetwork net) {
 
@@ -141,6 +131,8 @@ public class core {
 
     return hasPath;
   }
+  
+  
   
   
 }
