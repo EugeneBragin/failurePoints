@@ -16,8 +16,11 @@ import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
 import cytoscape.util.CytoscapeAction;
 import cytoscape.view.CyNetworkView;
+import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanelImp;
 import giny.view.NodeView;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -28,7 +31,7 @@ import javax.swing.SwingConstants;
  */
 public class plugin extends CytoscapePlugin {
 
-    JPanel failurePointsPanel = new failurePointsControlPanel();
+    failurePointsControlPanel failurePointsPanel = new failurePointsControlPanel();
     
     
     public plugin() {
@@ -48,6 +51,8 @@ public class plugin extends CytoscapePlugin {
         Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new sampleTaskAction(this));
         Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new highlightFailurePointsAction(this));
         Cytoscape.getDesktop().getCyMenus().addCytoscapeAction(new isFailureNodeAction(this));
+        
+		EventListener eventListener = new EventListener();
     }
     
     
@@ -141,4 +146,31 @@ public class plugin extends CytoscapePlugin {
             System.out.println("It " + (failure ? "is" : "isn't") + " failure node");
         }
     }
+    
+    
+    
+	public class EventListener implements  PropertyChangeListener {
+		
+		public EventListener() {
+			// Register this class as a listener to listen Cytoscape events
+			Cytoscape.getPropertyChangeSupport().addPropertyChangeListener(Cytoscape.NETWORK_CREATED, this);
+			Cytoscape.getPropertyChangeSupport().addPropertyChangeListener(Cytoscape.NETWORK_MODIFIED, this);
+			Cytoscape.getPropertyChangeSupport().addPropertyChangeListener(Cytoscape.NETWORK_DESTROYED, this);
+		}
+		
+		// Handle PropertyChangeEvent
+		public void propertyChange(PropertyChangeEvent e) {
+            if (e.getPropertyName().equalsIgnoreCase(Cytoscape.NETWORK_CREATED)) {
+                failurePointsPanel.updateUI(Cytoscape.getCurrentNetwork());
+                failurePointsPanel.enableUI();
+            } 
+            if (e.getPropertyName().equalsIgnoreCase(Cytoscape.NETWORK_MODIFIED)) {
+                failurePointsPanel.updateUI(Cytoscape.getCurrentNetwork());
+            } 
+            if (e.getPropertyName().equalsIgnoreCase(Cytoscape.NETWORK_DESTROYED)) {
+                failurePointsPanel.disableUI();
+            }
+		}
+	}
+    
 }

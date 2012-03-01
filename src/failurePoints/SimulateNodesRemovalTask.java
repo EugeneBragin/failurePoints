@@ -16,9 +16,12 @@ import java.awt.event.WindowEvent;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Random;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import org.apache.commons.lang.ArrayUtils;
 
 public class SimulateNodesRemovalTask implements Task {
 
@@ -31,6 +34,9 @@ public class SimulateNodesRemovalTask implements Task {
     private boolean interrupted = false;
 
     private JTable simulationStatsTable;
+    
+    public static Random generator = new Random();
+    
 
     /**
      * Constructor.
@@ -49,26 +55,56 @@ public class SimulateNodesRemovalTask implements Task {
      * Run the Task.
      */
     public void run() {
-        int count = 0;
-        double avgDegree = 0;
 
         if (taskMonitor == null) {
             throw new IllegalStateException("Task Monitor is not set.");
         }
         try {
-            int allNodes[] = this.network.getNodeIndicesArray();
-            int rndNodes[] = core.pickNRandomNodes(N, network);
-
-            for (int i = 0; i < rndNodes.length; i++) {
-                NodeView nView = this.view.getNodeView(rndNodes[i]);
-                nView.setSelected(true);
-            }
+            ((DefaultTableModel)simulationStatsTable.getModel()).setRowCount(0);
+            ((DefaultTableModel)simulationStatsTable.getModel()).setRowCount(N);
             
-            this.view.redrawGraph(true, true);
+            for (int n = 1; n <= N && !interrupted; n++) {
+                int percentComplete = (int) (((double) (n-1)/N) * 100);
+                taskMonitor.setPercentCompleted(percentComplete);
+                double avgCount = 0;
+                for (int m = 1; m <= M && !interrupted; m++) {
+                    // Calculate Percentage.  This must be a value between 0..100.
+                    
+                    taskMonitor.setStatus("Nodes removed: " + Integer.toString(n) + "; iteration: " + Integer.toString(m));
 
+                    int count = 0;
+                    
+                    int allNodes[] = network.getNodeIndicesArray();
+                    int rndNodes[] = new int[n];
+
+                    // Pick n random nodes, remove them from allNodes
+                    for (int i = 1; i <= n && !interrupted; i++) {
+                        int rnd = generator.nextInt(allNodes.length);
+                        rndNodes[i-1] = allNodes[rnd];
+                        allNodes = ArrayUtils.remove(allNodes, rnd);
+                    }
+
+                    int i = 0;
+                    while (i < allNodes.length && !interrupted) {
+                        boolean failure = false;
+
+                        if (core.isFailurePoint(allNodes[i], this.network)) {
+                            failure = true;
+                            count++;
+                        }
+                        i++;
+                    }
+                    avgCount += count;
+                }
+                avgCount = avgCount/M;
+                
+                System.out.println(Integer.toString(n) + " : " + new DecimalFormat("#.##").format(avgCount));
+                // TODO update table with n and avgCount
+                simulationStatsTable.setValueAt(n, n-1, 0);
+                simulationStatsTable.setValueAt(new DecimalFormat("#.##").format(avgCount), n-1, 1);
+            }
         } catch (Exception e) {
             taskMonitor.setException(e, "Exception");
-        } finally {
         }
     }
 
@@ -97,6 +133,6 @@ public class SimulateNodesRemovalTask implements Task {
      * @return human readable task title.
      */
     public String getTitle() {
-        return new String("Simulation...");
+        return new String("Nodes Removal Simulation");
     }
 }
