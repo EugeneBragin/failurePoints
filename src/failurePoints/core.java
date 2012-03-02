@@ -7,10 +7,9 @@ package failurePoints;
 import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
 import cytoscape.view.CyNetworkView;
+import giny.model.GraphPerspective;
 import giny.view.NodeView;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import org.apache.commons.lang.ArrayUtils;
@@ -21,56 +20,41 @@ import org.apache.commons.lang.ArrayUtils;
  */
 public class core {
 
-  public static Random generator = new Random();
-    
-  public static boolean isFailurePoint(int nodeId, CyNetwork net) {
+  public static boolean isFailurePoint(int nodeId, GraphPerspective graph) {
     boolean failure = false;
-          
-    int kids[] = net.getAdjacentEdgeIndicesArray(nodeId, false, true, true);
+    HashMap visited = new HashMap();
+    visited.put(nodeId, 1);
+    
+    int kids[] = graph.getAdjacentEdgeIndicesArray(nodeId, false, true, true);
+    
     if (kids.length >= 2) {
-      int firstKidID = net.getEdgeTargetIndex(kids[0]);
+      int firstKidID = graph.getEdgeTargetIndex(kids[0]);
       if (firstKidID == nodeId) {
-        firstKidID = net.getEdgeSourceIndex(kids[0]);
+        firstKidID = graph.getEdgeSourceIndex(kids[0]);
       }
-
+      
       for (int i = 1; i < kids.length; i++) {
-        int xKidId = net.getEdgeTargetIndex(kids[i]);
+        int xKidId = graph.getEdgeTargetIndex(kids[i]);
         if (xKidId == nodeId) {
-          xKidId = net.getEdgeSourceIndex(kids[i]);
+          xKidId = graph.getEdgeSourceIndex(kids[i]);
         }
-
-        if (!core.hasPathAvoiding(firstKidID, xKidId, nodeId, net)) {
+        
+        if (!core.hasPath(firstKidID, xKidId, new HashMap(visited), graph)) {
           failure = true;
           break;
         }
-
       }
     }
     
     return failure;
   }
-        
-  public static int[] pickNRandomNodes(int N, CyNetwork net) {
-      int rndNodes[] = new int[N];
-      int allNodes[] = net.getNodeIndicesArray();
-      
-      for (int i = 1; i <= N; i++) {
-          int rnd = generator.nextInt(allNodes.length);
-          rndNodes[i-1] = allNodes[rnd];
-          allNodes = ArrayUtils.remove(allNodes, rnd);
-      }
 
-      return rndNodes;
-  }
   
-  public static boolean hasPathAvoiding(int source, int target, int avoid, CyNetwork net) {
+  public static boolean hasPath(int source, int target, HashMap visited, GraphPerspective graph) {
 
     //the hasPath boolean is created with inital value false
     boolean hasPath = false;
 
-    HashMap visited = new HashMap();
-    visited.put(avoid, 1);
-    
     //The following wector contains the nodes that we still have to process
     Vector<Integer> toConsider = new Vector<Integer>();
     //The only node to consider at the beginning is the source node
@@ -98,15 +82,15 @@ public class core {
           //add them to the list of nodes to consider
 
           //Let's get all the outgoing edges from the curNode
-          int kids[] = net.getAdjacentEdgeIndicesArray(curNode, false, true, true);
+          int kids[] = graph.getAdjacentEdgeIndicesArray(curNode, false, true, true);
           //Let's loop through all the outgoing edges to get the children
           //of the curNode
           for (int i = 0; i < kids.length; i++) {
             //The neighbor node of the kids[i]-th edge is going to be the node that is the target
             //of the kids[i]-th edge
-            int neighborNodeID = net.getEdgeTargetIndex(kids[i]);
+            int neighborNodeID = graph.getEdgeTargetIndex(kids[i]);
             if (neighborNodeID == curNode) {
-              neighborNodeID = net.getEdgeSourceIndex(kids[i]);
+              neighborNodeID = graph.getEdgeSourceIndex(kids[i]);
             }
             //Has the neighbor node been visited yet ??
             if (!visited.containsKey(neighborNodeID)) {

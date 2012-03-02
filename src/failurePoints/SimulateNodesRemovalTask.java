@@ -9,6 +9,7 @@ import cytoscape.view.CyNetworkView;
 
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
+import giny.model.GraphPerspective;
 import giny.view.NodeView;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
@@ -16,6 +17,7 @@ import java.awt.event.WindowEvent;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.Random;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -69,26 +71,27 @@ public class SimulateNodesRemovalTask implements Task {
                 double avgCount = 0;
                 for (int m = 1; m <= M && !interrupted; m++) {
                     // Calculate Percentage.  This must be a value between 0..100.
+                    int count = 0;
                     
                     taskMonitor.setStatus("Nodes removed: " + Integer.toString(n) + "; iteration: " + Integer.toString(m));
 
-                    int count = 0;
-                    
                     int allNodes[] = network.getNodeIndicesArray();
                     int rndNodes[] = new int[n];
 
+                    GraphPerspective graph = (GraphPerspective) network.clone();
+                    
                     // Pick n random nodes, remove them from allNodes
-                    for (int i = 1; i <= n && !interrupted; i++) {
+                    for (int i = 0; i < n; i++) {
                         int rnd = generator.nextInt(allNodes.length);
-                        rndNodes[i-1] = allNodes[rnd];
+                        rndNodes[i] = allNodes[rnd];
                         allNodes = ArrayUtils.remove(allNodes, rnd);
+                        graph.hideNode(rndNodes[i]);
                     }
 
                     int i = 0;
                     while (i < allNodes.length && !interrupted) {
                         boolean failure = false;
-
-                        if (core.isFailurePoint(allNodes[i], this.network)) {
+                        if (core.isFailurePoint(allNodes[i], graph)) {
                             failure = true;
                             count++;
                         }

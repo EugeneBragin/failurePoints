@@ -9,6 +9,7 @@ import cytoscape.view.CyNetworkView;
 
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
+import giny.model.GraphPerspective;
 import giny.view.NodeView;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
@@ -16,6 +17,7 @@ import java.awt.event.WindowEvent;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -73,7 +75,7 @@ public class HighlightFailurePointsTask implements Task {
                 // Calculate Percentage.  This must be a value between 0..100.
                 int percentComplete = (int) (((double) (i + 1) / allNodes.length) * 100);
                 taskMonitor.setPercentCompleted(percentComplete);
-                if (core.isFailurePoint(allNodes[i], this.network)) {
+                if (core.isFailurePoint(allNodes[i], (GraphPerspective)network.clone())) {
                     failure = true;
                     count++;
                     avgDegree += this.network.getDegree(allNodes[i]);
