@@ -4,26 +4,11 @@
  */
 package failurePoints;
 
-import cytoscape.CyNetwork;
-import java.awt.event.ActionEvent;
-
 import cytoscape.Cytoscape;
-import cytoscape.view.CyMenus;
 import cytoscape.plugin.CytoscapePlugin;
-import cytoscape.task.Task;
-import cytoscape.task.sample.SampleTask;
-import cytoscape.task.ui.JTaskConfig;
-import cytoscape.task.util.TaskManager;
-import cytoscape.util.CytoscapeAction;
-import cytoscape.view.CyNetworkView;
-import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanelImp;
-import giny.view.NodeView;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashMap;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 /**
@@ -53,7 +38,7 @@ public class plugin extends CytoscapePlugin {
     }
 
     
-	public class EventListener implements  PropertyChangeListener {
+	public class EventListener implements PropertyChangeListener {
 		
 		public EventListener() {
 			// Register this class as a listener to listen Cytoscape events

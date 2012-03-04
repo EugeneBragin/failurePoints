@@ -11,15 +11,9 @@ import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 import giny.model.GraphPerspective;
 import giny.view.NodeView;
-import java.awt.Frame;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.HashMap;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 public class HighlightFailurePointsTask implements Task {
 

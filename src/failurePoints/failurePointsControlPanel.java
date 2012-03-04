@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package failurePoints;
 
 import cytoscape.CyNetwork;
@@ -11,28 +7,26 @@ import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
 import cytoscape.view.CyNetworkView;
 import giny.model.GraphPerspective;
-import java.util.Random;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import org.apache.commons.lang.ArrayUtils;
 
 /**
  *
- * @author eb4
+ * @author Eugene Bragin
  */
 public class failurePointsControlPanel extends javax.swing.JPanel {
 
     /**
-     * Creates new form failurePointsControlPanel
+     * The constructor
+     * creates control panel and initialises components
      */
     public failurePointsControlPanel() {
         initComponents();
     }
 
-    public JLabel getNOfFailureNodesLabel() {
-        return nOfFailureNodesLabel;
-    }
 
+    /**
+     * updates UI maxNumberOfNodesToRemoveCombo with number of nodes in the network
+     */
     public void updateUI(CyNetwork network){
         int allNodes[] = network.getNodeIndicesArray();
         maxNumberOfNodesToRemoveCombo.removeAllItems();
@@ -42,6 +36,9 @@ public class failurePointsControlPanel extends javax.swing.JPanel {
 
     }
     
+    /**
+     * enables UI components
+     */
     public void enableUI() {
         maxNumberOfNodesToRemoveCombo.setEnabled(true);
         nOfIterationsCombo.setEnabled(true);
@@ -56,6 +53,9 @@ public class failurePointsControlPanel extends javax.swing.JPanel {
         jLabel3.setEnabled(true);
     }
     
+    /**
+     * disables UI components
+     */
     public void disableUI() {
         maxNumberOfNodesToRemoveCombo.setEnabled(false);
         nOfIterationsCombo.setEnabled(false);
@@ -188,7 +188,7 @@ public class failurePointsControlPanel extends javax.swing.JPanel {
         jLabel6.setText("Number of iterations:");
         jLabel6.setEnabled(false);
 
-        nOfIterationsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25" }));
+        nOfIterationsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50" }));
         nOfIterationsCombo.setEnabled(false);
 
         startSimulationButton.setText("Start simulation");
@@ -269,6 +269,9 @@ public class failurePointsControlPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * fires SimulateNodesRemovalTask
+     */
     private void startSimulationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startSimulationButtonActionPerformed
         Task task = new SimulateNodesRemovalTask(
                 Cytoscape.getCurrentNetwork(), 
@@ -285,6 +288,9 @@ public class failurePointsControlPanel extends javax.swing.JPanel {
         boolean success = TaskManager.executeTask(task, config);        // TODO add your handling code here:
     }//GEN-LAST:event_startSimulationButtonActionPerformed
 
+    /**
+     * fires SimulateNodesRemovalTask
+     */
     private void highlightFailureNodesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_highlightFailureNodesButtonActionPerformed
         Task task = new HighlightFailurePointsTask(Cytoscape.getCurrentNetwork(), Cytoscape.getCurrentNetworkView(), nOfFailureNodesLabel, averageConnDegreeLabel);
 
@@ -295,6 +301,10 @@ public class failurePointsControlPanel extends javax.swing.JPanel {
         boolean success = TaskManager.executeTask(task, config);        // TODO add your handling code here:
     }//GEN-LAST:event_highlightFailureNodesButtonActionPerformed
 
+    /**
+     * checks if selected node is a failure point and
+     * updates selectedNodeTestLabel with result
+     */
     private void testNodeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testNodeButtonActionPerformed
         CyNetworkView view = Cytoscape.getCurrentNetworkView();
         GraphPerspective graph = (GraphPerspective) Cytoscape.getCurrentNetwork().clone();
